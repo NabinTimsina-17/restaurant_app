@@ -26,7 +26,6 @@ class SplashScreenState extends State<SplashScreen> {
             Image.asset('assets/images/logo.png', width: 200), 
             const SizedBox(height: 100), 
             Image.asset('assets/images/line.png', width: 200),
-            Image.asset('assets/images/otherline.png', width: 200),
           ],
         ),
       ),
