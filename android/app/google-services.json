@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "872243096315",
+    "project_id": "restaurant-application-bc527",
+    "storage_bucket": "restaurant-application-bc527.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872243096315:android:b183940210b67b911b5e5e",
+        "android_client_info": {
+          "package_name": "com.example.restaur"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8vyvt8VUc80EZChA09O7YgfYJUiCiL0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872243096315:android:3c8b9b2cb620df9d1b5e5e",
+        "android_client_info": {
+          "package_name": "com.example.restaurant_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8vyvt8VUc80EZChA09O7YgfYJUiCiL0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

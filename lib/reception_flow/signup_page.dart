@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -12,16 +13,27 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void _signUp() {
+  // Method to sign up the user using Firebase Authentication
+  Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
-      String email = _emailController.text;
-      String password = _passwordController.text;
-      String phoneNumber = _phoneController.text;
+      try {
+        final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
 
-      print('Signing up with Email: $email, Password: $password, Phone: $phoneNumber');
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Sign-up successful!'),
+        ));
 
-      Navigator.pop(context);
+        Navigator.pop(context);  // Go back to sign-in screen
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to sign up: $e'),
+        ));
+      }
     }
   }
 
@@ -40,10 +52,14 @@ class _SignUpPageState extends State<SignUpPage> {
                 const SizedBox(height: 150),
                 Image.asset('assets/images/logo.png', height: 120),
                 const SizedBox(height: 48),
-                inputField(
+                // Email Input Field
+                TextFormField(
                   controller: _emailController,
-                  hint: "Email",
-                  icon: Icons.email,
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
@@ -52,11 +68,15 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 const SizedBox(height: 12),
-                inputField(
+                // Password Input Field
+                TextFormField(
                   controller: _passwordController,
-                  hint: "Password",
-                  icon: Icons.lock,
-                  isPassword: true,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -65,10 +85,14 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 const SizedBox(height: 12),
-                inputField(
+                // Phone Number Input Field
+                TextFormField(
                   controller: _phoneController,
-                  hint: "Phone Number",
-                  icon: Icons.phone,
+                  decoration: const InputDecoration(
+                    labelText: "Phone Number",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your phone number';
@@ -77,14 +101,18 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
                 const SizedBox(height: 24),
-                actionButton(label: "Sign up", onPressed: _signUp),
+                // Sign Up Button
+                ElevatedButton(
+                  onPressed: _signUp,
+                  child: const Text("Sign up"),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text("Already have an account?"),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context);  // Go back to sign-in screen
                       },
                       child: const Text("Sign in"),
                     ),
@@ -97,36 +125,4 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
     );
   }
-}
-
-Widget inputField({
-  required TextEditingController controller,
-  required String hint,
-  required IconData icon,
-  bool isPassword = false,
-  String? Function(String?)? validator,
-}) {
-  return TextFormField(
-    controller: controller,
-    obscureText: isPassword,
-    validator: validator,
-    decoration: InputDecoration(
-      hintText: hint,
-      prefixIcon: Icon(icon),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-  );
-}
-
-Widget actionButton({required String label, required VoidCallback onPressed}) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF4CAF50),
-      minimumSize: const Size(double.infinity, 50),
-    ),
-    child: Text(label),
-  );
 }

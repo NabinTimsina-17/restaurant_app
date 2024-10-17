@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:restaurant_application/reception_flow/homescreen.dart';
 import 'package:restaurant_application/reception_flow/signup_page.dart';
 
@@ -13,18 +14,28 @@ class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void _signIn() {
+  // Method to sign in the user using Firebase Authentication
+  Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
-      String email = _emailController.text;
-      String password = _passwordController.text;
-      
-      print('Attempting sign in with Email: $email, Password: $password');
+      try {
+        final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+        // If successful, navigate to HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } catch (e) {
+        // Show error message if sign in fails
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Failed to sign in: $e'),
+        ));
+      }
     }
   }
 
@@ -43,10 +54,14 @@ class _SignInPageState extends State<SignInPage> {
                 const SizedBox(height: 150),
                 Image.asset('assets/images/logo.png', height: 120),
                 const SizedBox(height: 48),
-                inputField(
+                // Email Input Field
+                TextFormField(
                   controller: _emailController,
-                  hint: "Email",
-                  icon: Icons.email,
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
@@ -55,11 +70,15 @@ class _SignInPageState extends State<SignInPage> {
                   },
                 ),
                 const SizedBox(height: 12),
-                inputField(
+                // Password Input Field
+                TextFormField(
                   controller: _passwordController,
-                  hint: "Password",
-                  icon: Icons.lock,
-                  isPassword: true,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -68,9 +87,14 @@ class _SignInPageState extends State<SignInPage> {
                   },
                 ),
                 const SizedBox(height: 24),
-                actionButton(label: "Sign in", onPressed: _signIn),
+                // Sign In Button
+                ElevatedButton(
+                  onPressed: _signIn,
+                  child: const Text("Sign in"),
+                ),
                 TextButton(
                   onPressed: () {
+                    // Handle forgot password functionality here
                   },
                   child: const Text("Forgot Password?"),
                 ),
@@ -102,36 +126,4 @@ class _SignInPageState extends State<SignInPage> {
       ),
     );
   }
-}
-
-Widget inputField({
-  required TextEditingController controller,
-  required String hint,
-  required IconData icon,
-  bool isPassword = false,
-  String? Function(String?)? validator,
-}) {
-  return TextFormField(
-    controller: controller,
-    obscureText: isPassword,
-    validator: validator,
-    decoration: InputDecoration(
-      hintText: hint,
-      prefixIcon: Icon(icon),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-  );
-}
-
-Widget actionButton({required String label, required VoidCallback onPressed}) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFF4CAF50),
-      minimumSize: const Size(double.infinity, 50),
-    ),
-    child: Text(label),
-  );
 }

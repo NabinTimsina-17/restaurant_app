@@ -3,10 +3,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:restaurant_application/reception_flow/change_status.dart';
 import 'package:restaurant_application/reception_flow/notification_screen.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -53,12 +49,17 @@ class HomeScreenState extends State<HomeScreen> {
             DropdownButton<String>(
               value: 'EN',
               items: <String>['EN', 'FR', 'ES'].map((String value) {
+                
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),
                 );
               }).toList(),
-              onChanged: (String? newValue) {},
+              onChanged: (String? newValue) {
+                setState(() {
+                  var dropdownvalue = newValue!;
+                });
+              },
             ),
             const Spacer(),
             IconButton(
@@ -122,9 +123,11 @@ class HomeScreenState extends State<HomeScreen> {
                 children: [
                   _filterButton('Occupied', 3),
                   const SizedBox(width: 10),
-                  _filterButton('Empty', 5),
+                  _filterButton('Empty', 2),
                   const SizedBox(width: 10),
                   _filterButton('To Clean', 1),
+                  const SizedBox(width: 10),
+                  _filterButton('Order Placed', 3),
                 ],
               ),
             ),
