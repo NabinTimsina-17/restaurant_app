@@ -43,7 +43,7 @@ The Restaurant Application is designed to help restaurant staff manage various o
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/restaurant_application.git
+   git clone https://github.com/NabinTimsina-17/restaurant_app.git
    ```
 
 2. Navigate to the project directory:
