@@ -38,6 +38,21 @@ class HomeScreenState extends State<HomeScreen> {
     {"table": "Table 12", "status": "Empty", "color": Colors.green[100]},
   ];
 
+  String? selectedStatus;
+
+  // Function to filter tables based on the selected status
+  List<Map<String, dynamic>> get filteredTables {
+    if (selectedStatus == null) {
+      return tables;
+    }
+    return tables.where((table) => table['status'] == selectedStatus).toList();
+  }
+
+  // Function to count the number of tables for a specific status
+  int countTablesByStatus(String status) {
+    return tables.where((table) => table['status'] == status).length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +64,6 @@ class HomeScreenState extends State<HomeScreen> {
             DropdownButton<String>(
               value: 'EN',
               items: <String>['EN', 'FR', 'ES'].map((String value) {
-                
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),
@@ -91,10 +105,11 @@ class HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               onPressed: () {
-              Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) =>  NotificationScreen()),
-                    );  
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => NotificationScreen()),
+                );
               },
             ),
           ],
@@ -106,7 +121,9 @@ class HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             child: Row(
               children: [
-                const Text('Restaurant Tables', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w400)),
+                const Text('Restaurant Tables',
+                    style:
+                        TextStyle(fontSize: 28, fontWeight: FontWeight.w400)),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.search, color: Colors.black),
@@ -121,13 +138,14 @@ class HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _filterButton('Occupied', 3),
+                  _filterButton('Occupied', countTablesByStatus('Occupied')),
                   const SizedBox(width: 10),
-                  _filterButton('Empty', 2),
+                  _filterButton('Empty', countTablesByStatus('Empty')),
                   const SizedBox(width: 10),
-                  _filterButton('To Clean', 1),
+                  _filterButton('To Clean', countTablesByStatus('To Clean')),
                   const SizedBox(width: 10),
-                  _filterButton('Order Placed', 3),
+                  _filterButton(
+                      'Order Placed', countTablesByStatus('Order Placed')),
                 ],
               ),
             ),
@@ -141,12 +159,12 @@ class HomeScreenState extends State<HomeScreen> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.2,
               ),
-              itemCount: tables.length,
+              itemCount: filteredTables.length,
               itemBuilder: (context, index) {
                 return _tableCard(
-                  tables[index]['table'],
-                  tables[index]['status'],
-                  tables[index]['color'],
+                  filteredTables[index]['table'],
+                  filteredTables[index]['status'],
+                  filteredTables[index]['color'],
                   index,
                 );
               },
@@ -157,10 +175,12 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Filter Button Widget
   Widget _filterButton(String label, int count) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
+        backgroundColor:
+            selectedStatus == label ? Colors.blue : Colors.white, // Highlight selected button
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -168,11 +188,23 @@ class HomeScreenState extends State<HomeScreen> {
         elevation: 0,
       ),
       onPressed: () {
-        // Handle filter button click
+        setState(() {
+          // Set the selected status for filtering
+          if (selectedStatus == label) {
+            selectedStatus = null; // Deselect if already selected
+          } else {
+            selectedStatus = label;
+          }
+        });
       },
       child: Row(
         children: [
-          Text(label, style: const TextStyle(color: Colors.black)),
+          Text(
+            label,
+            style: TextStyle(
+              color: selectedStatus == label ? Colors.white : Colors.black,
+            ),
+          ),
           const SizedBox(width: 5),
           CircleAvatar(
             radius: 10,
@@ -187,6 +219,7 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Table Card Widget
   Widget _tableCard(String table, String status, Color? color, int index) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -230,7 +263,8 @@ class HomeScreenState extends State<HomeScreen> {
                 final bool? result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChangeStatusScreen(tableName: table, newStatus: newValue),
+                    builder: (context) => ChangeStatusScreen(
+                        tableName: table, newStatus: newValue),
                   ),
                 );
 
