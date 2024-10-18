@@ -1,60 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:restaurant_application/reception_flow/change_status.dart';
 import 'package:restaurant_application/reception_flow/notification_screen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:restaurant_application/reception_flow/tableprovider.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
-}
-
-class HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> tables = [
-    {"table": "Table 01", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 02", "status": "To Clean", "color": Colors.red[100]},
-    {"table": "Table 03", "status": "Order Placed", "color": Colors.yellow[100]},
-    {"table": "Table 04", "status": "Occupied", "color": Colors.blue[100]},
-    {"table": "Table 05", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 06", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 07", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 08", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 09", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 10", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 11", "status": "Empty", "color": Colors.green[100]},
-    {"table": "Table 12", "status": "Empty", "color": Colors.green[100]},
-  ];
-
-  String? selectedStatus;
-
-  // Function to filter tables based on the selected status
-  List<Map<String, dynamic>> get filteredTables {
-    if (selectedStatus == null) {
-      return tables;
-    }
-    return tables.where((table) => table['status'] == selectedStatus).toList();
-  }
-
-  // Function to count the number of tables for a specific status
-  int countTablesByStatus(String status) {
-    return tables.where((table) => table['status'] == status).length;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final tableProvider = Provider.of<TableProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[200],
@@ -70,9 +27,7 @@ class HomeScreenState extends State<HomeScreen> {
                 );
               }).toList(),
               onChanged: (String? newValue) {
-                setState(() {
-                  var dropdownvalue = newValue!;
-                });
+                // Handle language change
               },
             ),
             const Spacer(),
@@ -105,10 +60,9 @@ class HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               onPressed: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => NotificationScreen()),
+                  MaterialPageRoute(builder: (context) => NotificationScreen()),
                 );
               },
             ),
@@ -122,8 +76,7 @@ class HomeScreenState extends State<HomeScreen> {
             child: Row(
               children: [
                 const Text('Restaurant Tables',
-                    style:
-                        TextStyle(fontSize: 28, fontWeight: FontWeight.w400)),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w400)),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.search, color: Colors.black),
@@ -138,14 +91,13 @@ class HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _filterButton('Occupied', countTablesByStatus('Occupied')),
+                  _filterButton(context, 'Occupied', tableProvider.countTablesByStatus('Occupied')),
                   const SizedBox(width: 10),
-                  _filterButton('Empty', countTablesByStatus('Empty')),
+                  _filterButton(context, 'Empty', tableProvider.countTablesByStatus('Empty')),
                   const SizedBox(width: 10),
-                  _filterButton('To Clean', countTablesByStatus('To Clean')),
+                  _filterButton(context, 'To Clean', tableProvider.countTablesByStatus('To Clean')),
                   const SizedBox(width: 10),
-                  _filterButton(
-                      'Order Placed', countTablesByStatus('Order Placed')),
+                  _filterButton(context, 'Order Placed', tableProvider.countTablesByStatus('Order Placed')),
                 ],
               ),
             ),
@@ -159,14 +111,10 @@ class HomeScreenState extends State<HomeScreen> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1.2,
               ),
-              itemCount: filteredTables.length,
+              itemCount: tableProvider.filteredTables.length,
               itemBuilder: (context, index) {
-                return _tableCard(
-                  filteredTables[index]['table'],
-                  filteredTables[index]['status'],
-                  filteredTables[index]['color'],
-                  index,
-                );
+                final table = tableProvider.filteredTables[index];
+                return _tableCard(context, table['table'], table['status'], table['color'], index);
               },
             ),
           ),
@@ -176,11 +124,14 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   // Filter Button Widget
-  Widget _filterButton(String label, int count) {
+  Widget _filterButton(BuildContext context, String label, int count) {
+    final tableProvider = Provider.of<TableProvider>(context);
+
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor:
-            selectedStatus == label ? Colors.blue : Colors.white, // Highlight selected button
+        backgroundColor: tableProvider.selectedStatus == label
+            ? Colors.blue
+            : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -188,21 +139,16 @@ class HomeScreenState extends State<HomeScreen> {
         elevation: 0,
       ),
       onPressed: () {
-        setState(() {
-          // Set the selected status for filtering
-          if (selectedStatus == label) {
-            selectedStatus = null; // Deselect if already selected
-          } else {
-            selectedStatus = label;
-          }
-        });
+        tableProvider.setSelectedStatus(tableProvider.selectedStatus == label ? null : label);
       },
       child: Row(
         children: [
           Text(
             label,
             style: TextStyle(
-              color: selectedStatus == label ? Colors.white : Colors.black,
+              color: tableProvider.selectedStatus == label
+                  ? Colors.white
+                  : Colors.black,
             ),
           ),
           const SizedBox(width: 5),
@@ -220,7 +166,9 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   // Table Card Widget
-  Widget _tableCard(String table, String status, Color? color, int index) {
+  Widget _tableCard(BuildContext context, String table, String status, Color? color, int index) {
+    final tableProvider = Provider.of<TableProvider>(context, listen: false);
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -242,8 +190,7 @@ class HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 table,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
               ),
               Icon(
                 Icons.info_outline,
@@ -259,33 +206,23 @@ class HomeScreenState extends State<HomeScreen> {
             isExpanded: true,
             onChanged: (String? newValue) async {
               if (newValue != null) {
-                // Navigate to ChangeStatusScreen for confirmation
                 final bool? result = await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => ChangeStatusScreen(
-                        tableName: table, newStatus: newValue),
-                  ),
+                  MaterialPageRoute(builder: (context) => ChangeStatusScreen(
+                      tableName: table, // Pass table name
+                      newStatus: newValue)),  // Pass new status
                 );
-
-                // If user confirms, update status and show toast
-                if (result == true) {
-                  setState(() {
-                    tables[index]['status'] = newValue;
-                  });
-
+                if (result != null && result) {
+                  tableProvider.updateTableStatus(index, newValue);
                   Fluttertoast.showToast(
-                    msg: "$table is now $newValue",
+                    msg: "Table status updated successfully!",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
-                    backgroundColor: Colors.grey,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
                   );
                 }
               }
             },
-            items: <String>['Empty', 'To Clean', 'Order Placed', 'Occupied']
+            items: <String>['Occupied', 'Empty', 'To Clean', 'Order Placed']
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
